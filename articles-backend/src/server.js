@@ -18,9 +18,9 @@ app.get('/api/articles/:name', async (req, res) => {
 
 app.put('/api/articles/:name/upvote', async (req, res) => {
     const { name } = req.params;
-   
+
     await db.collection('articles').updateOne({ name }, {
-        $inc: { upvotes: 1 },
+        $inc: { upvotes: 1 }, // increment by one
     });
     const article = await db.collection('articles').findOne({ name });
 
