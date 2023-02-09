@@ -8,6 +8,8 @@ const AddCommentForm = ({articleName, onArticleUpdated}) => {
     const { user } = useUser();
     
     const addComment = async () => {
+        const token = user && await user.getIdToken();
+        const headers = token ? {authtoken: token} : {};
         const response = await axios.post(`/api/articles/${articleName}/comments`, {
             postedBy: name,
             text: commentText,
@@ -23,21 +25,13 @@ const AddCommentForm = ({articleName, onArticleUpdated}) => {
     return(
         <div className="add-comment-form">
             <h3>Add a Comment</h3>
-            <label>
-                Name: 
-                <input 
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    type="text" />
-            </label>
-            <label>
-                Comment
-                <textarea 
-                    value={commentText}
-                    onChange={e => setCommentText(e.target.value)}
-                    cols="50" 
-                    rows="4" />
-            </label>
+            {user && <p>You are posting as <span style={{'fontWeight': 'bold'}}>{user.email}</span></p> }
+            <textarea 
+                value={commentText}
+                onChange={e => setCommentText(e.target.value)}
+                cols="50" 
+                rows="4" 
+            />
             <button onClick={addComment}>Add comment</button>
         </div>
     )

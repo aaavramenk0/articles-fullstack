@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';  
 import NotFoundPage from './NotFoundPage';
 import CommentsList from '../components/CommentsList';
@@ -8,8 +8,10 @@ import articles from './article-content';
 import useUser from '../hooks/useUser';
 
 const ArticlePage = () => {
-    const [articleInfo, setArticleInfo] = useState({ upvotes: 0, comments: [] });
+    const [articleInfo, setArticleInfo] = useState({ upvotes: 0, comments: [], canUpvote: false });
+    const { canUpvote } = articleInfo;
     const { articleId } = useParams();
+    const navigate = useNavigate();
     const { user, isLoading } = useUser();
 
     useEffect(() => {
@@ -20,8 +22,11 @@ const ArticlePage = () => {
             const newArticleInfo = response.data;
             setArticleInfo(newArticleInfo)
         }
-        loadArticleInfo();
-    }, []);
+
+        if(isLoading) {
+            loadArticleInfo();
+        }
+    }, [isLoading, user]);
     
     const article = articles.find(article => article.name === articleId);
 
@@ -42,8 +47,10 @@ const ArticlePage = () => {
             <h1>{article.title}</h1>
             <div className='upvotes-section'>
                 { user 
-                    ? <button onClick={addUpvote}>Upvote</button>
-                    : <button>Log in to upvote</button> 
+                    ? <button onClick={addUpvote}>{canUpvote ? 'Upvote' : 'You already upvoted this article'}</button>
+                    : <button onClick={() => {
+                        navigate('/login')
+                    }}>Log in to upvote</button> 
                 }
                 <p>This article has {articleInfo.upvotes} upvote(s)</p>
             </div>
@@ -54,7 +61,9 @@ const ArticlePage = () => {
                 ? <AddCommentForm 
                     articleName={articleId} 
                     onArticleUpdated={updatedArticle => setArticleInfo(updatedArticle)}/>
-                : <button>Log in to add the comment</button>
+                : <button onClick={() => {
+                    navigate('/login')
+                }}>Log in to add the comment</button>
             }
             <CommentsList comments={articleInfo.comments} />
         </>
